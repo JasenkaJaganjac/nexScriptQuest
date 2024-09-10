@@ -15,14 +15,10 @@ funds from being locked indefinitely.
 
 contract SimpleEscrow(pubkey buyer, pubkey seller, pubkey escrowAgent, uint256 deadline) {
 
-    // Modifier to check if the deadline has passed
-    modifier checkDeadline() {
-        require(block.timestamp < deadline, "Transaction deadline has passed");
-        _;
-    }
 
     // Releases funds to the seller when conditions are met and the deadline has not passed
-    function releaseToSeller(sig escrowAgentSig) checkDeadline {
+    function releaseToSeller(sig escrowAgentSig){
+        require(block.timestamp < deadline, "Transaction deadline has passed");
         require(checkSig(escrowAgentSig, escrowAgent), "Invalid escrow agent signature");
         transfer(seller);
     }
