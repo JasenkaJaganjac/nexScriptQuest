@@ -7,22 +7,30 @@ conditions are met. If the conditions are met, the funds are released to the
 seller; if not, they are returned to the buyer. 
 
 This contract is designed for use cases where trust is required between 
-parties who may not know each other.
+parties who may not know each other, with an added timeout mechanism to prevent 
+funds from being locked indefinitely.
 
 */
 
 
-contract SimpleEscrow(pubkey buyer, pubkey seller, pubkey escrowAgent) {
-    
-    // Releases funds to the seller when conditions are met
-    function releaseToSeller(sig escrowAgentSig) {
-        require(checkSig(escrowAgentSig, escrowAgent));
+contract SimpleEscrow(pubkey buyer, pubkey seller, pubkey escrowAgent, uint256 deadline) {
+
+    // Modifier to check if the deadline has passed
+    modifier checkDeadline() {
+        require(block.timestamp < deadline, "Transaction deadline has passed");
+        _;
+    }
+
+    // Releases funds to the seller when conditions are met and the deadline has not passed
+    function releaseToSeller(sig escrowAgentSig) checkDeadline {
+        require(checkSig(escrowAgentSig, escrowAgent), "Invalid escrow agent signature");
         transfer(seller);
     }
     
-    // Returns funds to the buyer if conditions are not met
+    // Returns funds to the buyer if conditions are not met or the deadline has passed
     function refundToBuyer(sig escrowAgentSig) {
-        require(checkSig(escrowAgentSig, escrowAgent));
+        require(checkSig(escrowAgentSig, escrowAgent), "Invalid escrow agent signature");
+        require(block.timestamp >= deadline, "Deadline has not passed yet");
         transfer(buyer);
     }
 }
