@@ -18,7 +18,7 @@ contract SimpleEscrow(pubkey buyer, pubkey seller, pubkey escrowAgent, uint256 d
 
     // Releases funds to the seller when conditions are met and the deadline has not passed
     function releaseToSeller(sig escrowAgentSig){
-        require(block.timestamp < deadline, "Transaction deadline has passed");
+        require(tx.time < deadline, "Transaction deadline has passed");
         require(checkSig(escrowAgentSig, escrowAgent), "Invalid escrow agent signature");
         transfer(seller);
     }
@@ -26,7 +26,7 @@ contract SimpleEscrow(pubkey buyer, pubkey seller, pubkey escrowAgent, uint256 d
     // Returns funds to the buyer if conditions are not met or the deadline has passed
     function refundToBuyer(sig escrowAgentSig) {
         require(checkSig(escrowAgentSig, escrowAgent), "Invalid escrow agent signature");
-        require(block.timestamp >= deadline, "Deadline has not passed yet");
+        require(tx.time >= deadline, "Deadline has not passed yet");
         transfer(buyer);
     }
 }
